@@ -14,6 +14,7 @@ number_of_candidates = []
 
 #declaring lists of code of state and page numbers to deal with changing URLs
 # code_of_state deals with different states whereas page_number deals with constituencies within each state
+# initially only a few states and pages have been declared to make the code run quickly
 page_number = ['1','2','3']
 code_of_state = ['01', '02']
 
@@ -32,6 +33,11 @@ for j in range(0, len(code_of_state)):
             # the list candidates takes in the first td tag titled "align = centre", as this contains the serial number of contesting candidates
             candidates.append(td.find(attrs={"align":"center"}).get_text())
             # as only the total number of contesting candidates are needed, and not all the serial numbers, the list number_of_candidates takes in the last element of the list candidates
-            number_of_candidates = number_of_candidates + [candidates[-1]]
-            
+          number_of_candidates = number_of_candidates + [candidates[-1]]
+            # table scrapes the HTML code for the last row, which contains our variable of interest - the total number of votes polled in the given constituency 
+          table = soup.find(attrs={"style":"color: #fff; background: #105980; border-color:#673033; border-width:1px;border-style:Solid;font-family:Calibri;"})
+            # td_list contains each column in the last row
+          td_list = table.find_all("td")
+            # our variable of interest is in the sixth (index 5), so we append that to the list total_votes
+          total_votes.append(td_list[5].get_text())  
            
