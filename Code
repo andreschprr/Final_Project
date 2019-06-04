@@ -25,3 +25,13 @@ for j in range(0, len(code_of_state)):
         for k in range(0, len(state_ut)): 
           # page iterates over the changing URLs
           page = requests.get('http://results.eci.gov.in/pc/en/constituencywise/Constituencywise' + state_ut[k] + code_of_state[j] + page_number[i] +'.htm')
+          soup = BeautifulSoup(page.content, 'html.parser')
+          # full_table takes the each row, which is depicted by the tr tag "font-size:12px;" 
+          full_table = soup.find_all(attrs={"style":"font-size:12px;"})
+          for td in full_table:
+            # the list candidates takes in the first td tag titled "align = centre", as this contains the serial number of contesting candidates
+            candidates.append(td.find(attrs={"align":"center"}).get_text())
+            # as only the total number of contesting candidates are needed, and not all the serial numbers, the list number_of_candidates takes in the last element of the list candidates
+            number_of_candidates = number_of_candidates + [candidates[-1]]
+            
+           
