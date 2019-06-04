@@ -12,6 +12,11 @@ import pandas as pd
 #the first variable to be scraped is number of candidates in each constituency
 number_of_candidates = []
 
+#the second variable to be scraped is total votes polled in each constituency
+total_votes = []
+# td_list is a list which is used to append total_votes
+td_list = []
+
 #declaring lists of code of state and page numbers to deal with changing URLs
 # code_of_state deals with different states whereas page_number deals with constituencies within each state
 # initially only a few states and pages have been declared to make the code run quickly
@@ -27,14 +32,19 @@ for j in range(0, len(code_of_state)):
           # page iterates over the changing URLs
           page = requests.get('http://results.eci.gov.in/pc/en/constituencywise/Constituencywise' + state_ut[k] + code_of_state[j] + page_number[i] +'.htm')
           soup = BeautifulSoup(page.content, 'html.parser')
-          # full_table takes the each row, which is depicted by the tr tag "font-size:12px;" 
+          
+          # the next bit of code scrapes our first variable of interest - number of candidates in the given constituency
+          # full_table scrapes the HTML code for each row except the last; each row is depicted by the tr tag "font-size:12px;"; the first column of each row contains the serial number of candidate 
+          # full_table will take null values for all URLs that don't exist. for example, the URL with code_of_state = 02 and page_number = 3 does not exist
+          
           full_table = soup.find_all(attrs={"style":"font-size:12px;"})
-          for td in full_table:
-            # the list candidates takes in the first td tag titled "align = centre", as this contains the serial number of contesting candidates
-            candidates.append(td.find(attrs={"align":"center"}).get_text())
-            # as only the total number of contesting candidates are needed, and not all the serial numbers, the list number_of_candidates takes in the last element of the list candidates
-          number_of_candidates = number_of_candidates + [candidates[-1]]
-            # table scrapes the HTML code for the last row, which contains our variable of interest - the total number of votes polled in the given constituency 
+          # the if condition takes care of the null values of full_table
+          # the length of full_table is appended to number_of_candidates because our variable of interest, total number of candidates in the given constituency, is equal to length of full_table
+          if (len(full_table) is not 0):
+            number_of_candidates.append(len(full_table))
+            
+            # the next bit of code scrapes our second variable of interest - total votes polled in the given constituency
+            # table scrapes the HTML code for the last row (coloured in blue), which contains our second variable of interest
             # table will take null values for all URLs that don't exist. for example, the URL with code_of_state = 02 and page_number = 3 does not exist
           table = soup.find(attrs={"style":"color: #fff; background: #105980; border-color:#673033; border-width:1px;border-style:Solid;font-family:Calibri;"})
             # the if condition takes care of the null values of table  
@@ -43,4 +53,4 @@ for j in range(0, len(code_of_state)):
             td_list = table.find_all("td")
             # our variable of interest is in the sixth (index 5), so we append that to the list total_votes
             total_votes.append(td_list[5].get_text())  
-           
+          
