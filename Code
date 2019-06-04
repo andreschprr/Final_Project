@@ -1,0 +1,3 @@
+#the project's intention is to scrape data from Indian election 2019 for each of the 542 constituencies, and regress margin of victory in each constituency on a few different independent variables. 
+# the independent variables are: dummy variable political party of winning candidate, total number of votes cast in the constituency, total number of candidates in the constituency
+# there are two sets of URLs from which data has been scraped: 1. http://results.eci.gov.in/pc/en/trends/statewiseU011.htm; 2. http://results.eci.gov.in/pc/en/constituencywise/ConstituencywiseS033.htm
