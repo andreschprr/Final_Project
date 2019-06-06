@@ -1,5 +1,5 @@
 #the project's intention is to scrape data from Indian election 2019 for each of the 542 constituencies, and regress margin of victory in each constituency on a few different independent variables. 
-# the independent variables are: dummy variable political party of winning candidate, total number of votes cast in the constituency, total number of candidates in the constituency
+# there are three independent variables: 1. dummy variable political party of winning candidate; 2. total number of votes cast in the constituency; 3. total number of candidates in the constituency
 # there are two sets of URLs from which data has been scraped (each of these URLs keeps changing slightly to depict the different states and the constituencies within them, though the general format remains the same): 1. http://results.eci.gov.in/pc/en/trends/statewiseU011.htm; 2. http://results.eci.gov.in/pc/en/constituencywise/ConstituencywiseS033.htm
 
 
@@ -26,14 +26,14 @@ code_of_state = ['01', '02']
 # 'S' is for states whereas 'U' is for Union Territories
 state_ut = ['S', 'U']
 
-for j in range(0, len(code_of_state)):
-    for i in range(0, len(page_number)):
-        for k in range(0, len(state_ut)): 
+for j in (code_of_state):
+    for i in (page_number):
+        for k in (state_ut): 
           # page iterates over the changing URLs
-          page = requests.get('http://results.eci.gov.in/pc/en/constituencywise/Constituencywise' + state_ut[k] + code_of_state[j] + page_number[i] +'.htm')
+          page = requests.get('http://results.eci.gov.in/pc/en/constituencywise/Constituencywise' + k + j + i +'.htm')
           soup = BeautifulSoup(page.content, 'html.parser')
           
-          # the next bit of code scrapes our first variable of interest - number of candidates in the given constituency
+          # the next two lines of code scrape our first variable of interest - number of candidates in the given constituency
           # full_table scrapes the HTML code for each row except the last; each row is depicted by the tr tag "font-size:12px;"; the first column of each row contains the serial number of candidate 
           # full_table will take null values for all URLs that don't exist. for example, the URL with code_of_state = 02 and page_number = 3 does not exist
           
@@ -52,5 +52,26 @@ for j in range(0, len(code_of_state)):
             # td_list contains each column in the last row
             td_list = table.find_all("td")
             # our variable of interest is in the sixth (index 5), so we append that to the list total_votes
-            total_votes.append(td_list[5].get_text())  
-          
+            total_votes.append(td_list[5].get_text())
+            
+# scraping name of political party, margin of victory and name of constituency
+#declaring empty lists for each of the variables to be scraped
+#the first variable to be scraped is margin of victory in each constituency
+margin_of_victory = []
+name_of_const = []
+
+#the second variable to be scraped is the party to which the winning candidate belongs
+party_name = []
+
+for j in (code_of_state):
+    for i in (page_number):
+        for k in (state_ut): 
+          # page iterates over the changing URLs
+          page = requests.get('http://results.eci.gov.in/pc/en/constituencywise/Constituencywise' + k + j + i +'.htm')
+          soup = BeautifulSoup(page.content, 'html.parser')
+          full_table = soup.find_all(attrs={"style":"font-size:12px;"})
+          for td in full_table:
+                name_of_const.append(td.find('td').get_text())
+                margin.append(td.find(attrs={"align":"right"}).get_text())
+                party_name.append(td.find("tbody").find("td").get_text())
+
