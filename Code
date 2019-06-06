@@ -17,6 +17,11 @@ total_votes = []
 # td_list is a list which is used to append total_votes
 td_list = []
 
+#the third variable to be scraped is total votes polled in each constituency
+name_of_const = []
+
+
+
 #declaring lists of code of state and page numbers to deal with changing URLs
 # code_of_state deals with different states whereas page_number deals with constituencies within each state
 # initially only a few states and pages have been declared to make the code run quickly
@@ -33,7 +38,7 @@ for j in (code_of_state):
           page = requests.get('http://results.eci.gov.in/pc/en/constituencywise/Constituencywise' + k + j + i +'.htm')
           soup = BeautifulSoup(page.content, 'html.parser')
           
-          # the next two lines of code scrape our first variable of interest - number of candidates in the given constituency
+          # the next three lines of code scrape our first variable of interest - number of candidates in the given constituency
           # full_table scrapes the HTML code for each row except the last; each row is depicted by the tr tag "font-size:12px;"; the first column of each row contains the serial number of candidate 
           # full_table will take null values for all URLs that don't exist. for example, the URL with code_of_state = 02 and page_number = 3 does not exist
           
@@ -54,14 +59,32 @@ for j in (code_of_state):
             # our variable of interest is in the sixth (index 5), so we append that to the list total_votes
             total_votes.append(td_list[5].get_text())
             
+            # the next bit of code scrapes our third variable of interest - name of constituency
+            name_row = soup.find(class_="table-party")
+            if (name_row is not None):
+                tentative1_name_of_const.append(name_row.find("tr").get_text())
+                # the name has been split at "-" below because it is scraped as "Name of State-Name of constituency" while we only need the name of constituency 
+                tentative2_name_of_const.append(tentative_name_of_const[-1].strip().split("-"))
+                
+# converting tentative2_name_of_const to a tuple to extract the name of constituency from tentative2_name_of_const                
+x = tuple(tentative2_name_of_const)
+name_of_const = [lis[1] for lis in x]    
+            
+            
+            
+def             
 # scraping name of political party, margin of victory and name of constituency
 #declaring empty lists for each of the variables to be scraped
+
 #the first variable to be scraped is margin of victory in each constituency
 margin_of_victory = []
+
+#the second third variable to be scraped is the party to which the winning candidate belongs
+party_name = []
+
+#the third variable to be scraped is name of each constituency
 name_of_const = []
 
-#the second variable to be scraped is the party to which the winning candidate belongs
-party_name = []
 
 for j in (code_of_state):
     for i in (page_number):
@@ -71,8 +94,7 @@ for j in (code_of_state):
           soup = BeautifulSoup(page.content, 'html.parser')
           full_table = soup.find_all(attrs={"style":"font-size:12px;"})
           for td in full_table:
-                name_of_const.append(td.find('td').get_text())
-                margin.append(td.find(attrs={"align":"right"}).get_text())
+                margin_of_victory.append(td.find(attrs={"align":"right"}).get_text())
                 party_name.append(td.find("tbody").find("td").get_text())
-      
+                name_of_const.append(td.find('td').get_text())          
 
