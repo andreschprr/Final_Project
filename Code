@@ -74,7 +74,7 @@ def scrape2():
         
 
 
-def mergedf():
+def merge_operation():
     df1 = scrape1()
     df2 = scrape2()
     df_merged = pd.merge(df1, df2, on='Constituency')
@@ -83,9 +83,17 @@ def mergedf():
 
 
 def regression():
-    dfm = mergedf()
+    df_merged = merge_operation()
     reg = linear_model.LinearRegression()
-    reg.fit(dfm[['Candidates', 'Votes']], dfm['Margin'])
+    reg.fit(df_merged[['Candidates', 'Votes']], df_merged['Margin'])
     print(reg.coef_)
 
 regression()
+
+def charts():
+    df_merged = merge_operation()
+    #mean_margin_by_party = merged_df['Margin'][merged_df['Party'] == 'Indian National Congress'].mean()
+    seats_for_each_party = merged_df.groupby(['Party']).count()
+    print(seats_for_each_party)
+
+
