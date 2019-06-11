@@ -1,5 +1,6 @@
+ Final_Project
+
 Andres Chaparro Altamirano
-Final_Project
 
 
 
@@ -110,6 +111,7 @@ plt.title('Scatter plot pythonspot.com')
 plt.xlabel('Immigration_to_US')
 plt.ylabel('Intentional_homicides')
 plt.show()
+plt.savefig('immigrationvshomicides.png')
 
 
 x = fdb1['year']
@@ -122,17 +124,20 @@ y4 = fdb1['MX_GDP']
 #Immigration to the US has stabilized since its high point in the early 00's
 plt.plot( x, y1, marker='o', markerfacecolor='blue', markersize=12, color='blue', linewidth=4)
 plt.legend()
+plt.savefig('immigrationvstime.png')
 
 #Homicides, one of the main causes of immigration has increased considerable since 2008. It continues on a high note
 
 plt.plot( x, y2, marker='x', markerfacecolor='red', markersize=12, color='red', linewidth=4)
 plt.legend()
+plt.savefig('homicides.png')
 
 
 #US vs Mexico GDP growth follows a similar trend
 plt.plot( x, y3, marker='', color='olive', linewidth=2)
 plt.plot( x, y4, marker='', color='green', linewidth=2, linestyle='dashed')
 plt.legend()
+plt.savefig('MXvsUSgrowth.png')
 
 
 ###Three-part same graph showing the three key moments of immigration
@@ -143,8 +148,7 @@ for key, group in dp1:
     group.plot(ax=ax, kind='line', x='year', y='Immigration_to_US', label=key, color=colors[key])
 plt.ylabel('Immigration rate')
 plt.show()
-
-
+plt.savefig('decadelong.png')
 
 
 
