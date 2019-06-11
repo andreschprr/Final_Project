@@ -1,0 +1,170 @@
+Andres Chaparro Altamirano
+Final_Project
+
+
+
+import pandas as pd
+import datetime
+import pandas_datareader.data as web
+from pandas_datareader import wb
+import requests
+from bs4 import BeautifulSoup
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import plotly.plotly as py
+import plotly.graph_objs as go
+import statsmodels.api as sm
+from sklearn.linear_model import LinearRegression
+
+
+
+
+path = r'~/Documents/UChicago/3rd Quarter/Intro to Programming/Final Project/'
+Start_date = 1994
+End_date = 2017
+Ind_list = ['VC.IHR.PSRC.P5', 'NY.GDP.PCAP.KD.ZG','NY.GDP.PCAP.CD', 'SP.POP.0014.FE.ZS', 'SP.POP.0014.MA.ZS', 'SP.POP.1564.MA.ZS', 'SP.POP.1564.FE.ZS', 'SP.POP.65UP.TO.ZS', 'SP.POP.65UP.FE.ZS', 'SP.POP.0014.TO', 'SP.POP.1564.TO', 'SP.POP.65UP.TO', 'SM.POP.NETM']
+
+#Read databases
+
+dat_1 = wb.download(indicator='NY.GDP.PCAP.KD.ZG', country=['US'], start=Start_date, end=End_date)
+dat_2 = wb.download(indicator=Ind_list, country=['MX'], start=Start_date, end=End_date)
+
+
+url = 'https://raw.githubusercontent.com/andreschprr/Final_Project/master/MIG_11062019020036003.csv'
+dat_3 = pd.read_csv(url,index_col=0,parse_dates=[0])
+
+#Save databases
+
+dat_1.to_csv(path+'First_db.csv')
+dat_2.to_csv(path+'Second_db.csv')
+dat_3.to_csv(path+'Third_db.csv')
+
+#Work with new databases
+
+WBdb1 = pd.read_csv(path+'First_db.csv')
+WBdb2 = pd.read_csv(path+'Second_db.csv')
+OCDE1 = pd.read_csv(path+'Third_db.csv')
+
+#Data preparation
+
+##We are looking at the data from the perspective of Mexico, so we need to rearrange the
+##database so that we can unite them. The following commands may not immediately make sense
+##but they'll be clearer once we start analyzing the data
+
+new_df = WBdb1.rename(columns={'NY.GDP.PCAP.KD.ZG': 'US_GDP'})
+new_df.loc[new_df['country'] == 'United States', 'country'] = 'Mexico'
+new_df2 = pd.merge(new_df, WBdb2, how='outer', on=['country', 'year'])
+new_df2 = new_df2.rename(columns={'NY.GDP.PCAP.KD.ZG': 'MX_GDP', 'NY.GDP.PCAP.CD':'MX_GDP_CD',
+                                'SP.POP.0014.FE.ZS':'Female_0-14%', 'SP.POP.0014.MA.ZS':'Male_0-14%',
+                                'SP.POP.1564.FE.ZS':'Female_15-64%', 'SP.POP.1564.MA.ZS':'Male_15-64%',
+                                'SP.POP.65UP.FE.ZS':'Female_65UP%', 'SP.POP.65UP.MA.ZS':'Male_65UP%',
+                                'SP.POP.65UP.TO.ZS':'Tot_65UP%','SP.POP.65UP.FE.ZS':'Female_65UP%',
+                                'SP.POP.0014.TO':'Tot_0-14%', 'SP.POP.1564.TO':'Tot_15-64%', 'VC.IHR.PSRC.P5':
+                                    'Intentional_homicides', 'SM.POP.NETM':'Net_migration',
+                                    'SP.POP.65UP.TO':'Above65'})
+
+
+#Now it is time to prepare the other database to merge
+
+new_OCDE = OCDE1.loc[OCDE1['CO2'] == 'MEX']
+
+new_OCDE.columns
+
+new_OCDE2 = new_OCDE.drop(columns=['CO2', 'VAR', 'GEN', 'Flag Codes', 'Flags', 'Variable',
+                                  'Gender', 'Country', 'YEA', 'COU'])
+
+new_OCDE3 = new_OCDE2.rename(columns={'Country of birth/nationality':'country',
+                                      'Value':'Immigration_to_US', 'Year':'year'})
+
+#The three databases were merged using two keys. Country and Year. We can now drop the variable country
+
+new_df3 = pd.merge(new_df2, new_OCDE3, how='outer', on=['country', 'year'])
+
+new_df4 = new_df3.drop(columns=['country'])
+
+#Save new unified database
+
+new_df4.to_csv(path+'final_db.csv')
+
+##I realize the constant creation of new databases can be a bit troublesome but it helps me
+##keep track of changes and easily go back or restart from a certain point
+
+
+#Summary of information
+
+fdb1 = pd.read_csv(path+'final_db.csv', parse_dates=['year'], infer_datetime_format=True)
+fdb1 = fdb1.drop(columns=['Net_migration'])
+fdb1
+
+fdb1['decade'] = fdb1['year'].map(lambda d: str(d.year)[2]+'0')
+dp1 = fdb1.groupby('decade')
+
+
+##There appears some of a relation between homicides and immigration to the US
+colors = (0,0,0)
+area = 100
+
+plt.scatter(fdb1['Immigration_to_US'], fdb1['Intentional_homicides'], s=area, c=colors, alpha=0.5)
+plt.title('Scatter plot pythonspot.com')
+plt.xlabel('Immigration_to_US')
+plt.ylabel('Intentional_homicides')
+plt.show()
+
+
+x = fdb1['year']
+y1 = fdb1['Immigration_to_US']
+y2 = fdb1['Intentional_homicides']
+y3 = fdb1['US_GDP']
+y4 = fdb1['MX_GDP']
+
+
+#Immigration to the US has stabilized since its high point in the early 00's
+plt.plot( x, y1, marker='o', markerfacecolor='blue', markersize=12, color='blue', linewidth=4)
+plt.legend()
+
+#Homicides, one of the main causes of immigration has increased considerable since 2008. It continues on a high note
+
+plt.plot( x, y2, marker='x', markerfacecolor='red', markersize=12, color='red', linewidth=4)
+plt.legend()
+
+
+#US vs Mexico GDP growth follows a similar trend
+plt.plot( x, y3, marker='', color='olive', linewidth=2)
+plt.plot( x, y4, marker='', color='green', linewidth=2, linestyle='dashed')
+plt.legend()
+
+
+###Three-part same graph showing the three key moments of immigration
+
+fig, ax = plt.subplots()
+colors = {'90':'red', '00':'blue', '10':'yellow'}
+for key, group in dp1:
+    group.plot(ax=ax, kind='line', x='year', y='Immigration_to_US', label=key, color=colors[key])
+plt.ylabel('Immigration rate')
+plt.show()
+
+
+
+
+
+##models
+
+fdb2 = pd.read_csv(path+'final_db.csv')
+
+fdb2 = fdb2.drop(0)
+
+
+econ_model = sm.OLS(fdb2['Immigration_to_US'], fdb2['MX_GDP']).fit()
+predictions = econ_model.predict(fdb1['Immigration_to_US'])
+
+# Print out the statistics
+econ_model.summary()
+
+
+soc_model = sm.OLS(fdb2['Immigration_to_US'], fdb2['Intentional_homicides']).fit()
+predictions = soc_model.predict(fdb1['Immigration_to_US'])
+
+# Print out the statistics
+soc_model.summary()
+soc_model
