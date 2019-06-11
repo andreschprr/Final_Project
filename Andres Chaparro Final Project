@@ -157,6 +157,8 @@ plt.savefig('decadelong.png')
 fdb2 = pd.read_csv(path+'final_db.csv')
 
 fdb2 = fdb2.drop(0)
+fdb2 = fdb2.drop(23)
+
 
 
 econ_model = sm.OLS(fdb2['Immigration_to_US'], fdb2['MX_GDP']).fit()
@@ -171,4 +173,3 @@ predictions = soc_model.predict(fdb1['Immigration_to_US'])
 
 # Print out the statistics
 soc_model.summary()
-soc_model
